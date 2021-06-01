@@ -1,0 +1,11 @@
+service:
+  type: LoadBalancer
+worker:
+  replicaCount: 3
+  extraVolumes:
+    - name: spark-data
+      persistentVolumeClaim:
+        claimName: spark-data-pvc
+  extraVolumeMounts:
+    - name: spark-data
+      mountPath: /data
