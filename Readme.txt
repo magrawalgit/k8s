@@ -3,6 +3,8 @@ https://docs.bitnami.com/tutorials/process-data-spark-kubernetes/
 
 https://itnext.io/kafka-on-kubernetes-the-strimzi-way-part-1-bdff3e451788
 
+https://github.com/strimzi/strimzi-kafka-operator/tree/main/examples/kafka
+
 
 -------OCI
 
@@ -15,6 +17,8 @@ WARNING: Kubernetes configuration file is world-readable. This is insecure. Loca
 ls -al ~/.kube/config
 chmod o-r ~/.kube/config
 chmod g-r ~/.kube/config
+
+kubectl create namespace my-ws
 
 ---------SPARK BITNAMI installation with PVC
 helm repo add stable https://charts.helm.sh/stable
@@ -80,8 +84,17 @@ cat SUBMISSION-ID/stdout
 
 exit
 --------------Kafka strimzi installation
+kubectl create -f https://operatorhub.io/install/stable/strimzi-kafka-operator.yaml
+
+OR
+
 helm repo add strimzi https://strimzi.io/charts/
+helm repo update
+
 helm install strimzi-kafka strimzi/strimzi-kafka-operator
+
+
+to delete deployment - helm uninstall strimzi-kafka
 
 kubectl get pods
 
@@ -89,7 +102,37 @@ kubectl get crd | grep strimzi
 
 kubectl get crd kafkas.kafka.strimzi.io -o jsonpath="{.spec.versions[*].name}{'\n'}"
 
-
 kubectl apply -f https://raw.githubusercontent.com/mata1234/k8s/master/kafka-pvc.yml
 
-to delete deployment - helm uninstall strimzi-kafka
+kubectl get strimzi -o name
+
+to delete the cluster - kubectl delete kafka.kafka.strimzi.io/my-kafka-cluster
+
+kubectl get kafka
+
+kubectl get statefulset
+
+kubectl get pod
+
+kubectl get configmap
+
+kubectl get configmap/my-kafka-cluster-kafka-config -o yaml
+
+kubectl get pvc
+
+kubectl get svc
+
+Create a producer Pod
+kubectl run kafka-producer -ti --image=strimzi/kafka:latest-kafka-2.4.0 --rm=true --restart=Never -- bin/kafka-console-producer.sh --broker-list $KAFKA_CLUSTER_NAME-kafka-bootstrap:9092 --topic my-topic
+
+create a consumer Pod:
+export KAFKA_CLUSTER_NAME=my-kafka-cluster
+kubectl run kafka-consumer -ti --image=strimzi/kafka:latest-kafka-2.4.0 --rm=true --restart=Never -- bin/kafka-console-consumer.sh --bootstrap-server $KAFKA_CLUSTER_NAME-kafka-bootstrap:9092 --topic my-topic --from-beginning
+
+view data
+export CLUSTER_NAME=my-kafka-cluster
+kubectl get configmap/${CLUSTER_NAME}-kafka-config -o yaml
+
+
+
+
