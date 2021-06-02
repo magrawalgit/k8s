@@ -151,7 +151,7 @@ kubectl run kafka-producer -ti --image=strimzi/kafka:latest-kafka-2.6.0 --rm=tru
 create a consumer Pod:
 kubectl run kafka-consumer -ti --image=strimzi/kafka:latest-kafka-2.6.0 --rm=true --restart=Never -- bin/kafka-console-consumer.sh --bootstrap-server my-kafka-cluster-kafka-bootstrap:9092 --topic my-topic --from-beginning
 
-
+run CTRL+C to kill producer and consumer pod
 
 
 
