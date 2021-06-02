@@ -5,6 +5,11 @@ https://itnext.io/kafka-on-kubernetes-the-strimzi-way-part-1-bdff3e451788
 
 https://github.com/strimzi/strimzi-kafka-operator/tree/main/examples/kafka
 
+https://dzone.com/articles/migrate-data-across-kafka-cluster-using-mirrormake
+
+https://medium.com/geekculture/tracing-kafka-messages-on-k8s-with-strimzi-and-jaeger-5f2e737c69ea
+https://github.com/gkoenig/strimzi-jaeger-eval
+https://fluxcd.io/
 
 -------OCI
 
@@ -90,19 +95,24 @@ OR
 
 helm repo add strimzi https://strimzi.io/charts/
 helm repo update
-
-helm install strimzi-kafka strimzi/strimzi-kafka-operator
+helm search repo strimzi
+helm install strimzi-kafka-0.23 strimzi/strimzi-kafka-operator
 
 
 to delete deployment - helm uninstall strimzi-kafka
+
+
+kubectl get deployments
+
+kubectl apply -f https://raw.githubusercontent.com/mata1234/k8s/master/kafka-pvc.yml
+
+kubectl apply -f kafka-pvc.yml
 
 kubectl get pods
 
 kubectl get crd | grep strimzi
 
 kubectl get crd kafkas.kafka.strimzi.io -o jsonpath="{.spec.versions[*].name}{'\n'}"
-
-kubectl apply -f https://raw.githubusercontent.com/mata1234/k8s/master/kafka-pvc.yml
 
 kubectl get strimzi -o name
 
@@ -114,6 +124,8 @@ kubectl get statefulset
 
 kubectl get pod
 
+kubectl get kt
+
 kubectl get configmap
 
 kubectl get configmap/my-kafka-cluster-kafka-config -o yaml
@@ -122,16 +134,24 @@ kubectl get pvc
 
 kubectl get svc
 
-Create a producer Pod
-kubectl run kafka-producer -ti --image=strimzi/kafka:latest-kafka-2.4.0 --rm=true --restart=Never -- bin/kafka-console-producer.sh --broker-list $KAFKA_CLUSTER_NAME-kafka-bootstrap:9092 --topic my-topic
-
-create a consumer Pod:
-export KAFKA_CLUSTER_NAME=my-kafka-cluster
-kubectl run kafka-consumer -ti --image=strimzi/kafka:latest-kafka-2.4.0 --rm=true --restart=Never -- bin/kafka-console-consumer.sh --bootstrap-server $KAFKA_CLUSTER_NAME-kafka-bootstrap:9092 --topic my-topic --from-beginning
+kubectl get secret
 
 view data
-export CLUSTER_NAME=my-kafka-cluster
-kubectl get configmap/${CLUSTER_NAME}-kafka-config -o yaml
+kubectl get configmap/my-kafka-cluster-kafka-config -o yaml
+
+kubectl apply -f kafka-topic.yml
+OR
+kubectl run kafka-topics -ti --image=strimzi/kafka:latest-kafka-2.6.0 --rm=true --restart=Never -- bin/kafka-topics.sh  --zookeeper my-kafka-cluster-zookeeper-client:2181 --create --replication-factor 1 --partitions 2 --topic my-topic
+
+kubectl exec my-kafka-cluster-kafka-0 -it -- /opt/kafka/bin/kafka-topics.sh --describe --topic my-topic --bootstrap-server 0.0.0.0:9092
+
+Create a producer Pod
+kubectl run kafka-producer -ti --image=strimzi/kafka:latest-kafka-2.6.0 --rm=true --restart=Never -- bin/kafka-console-producer.sh --broker-list my-kafka-cluster-kafka-bootstrap:9092 --topic my-topic
+
+create a consumer Pod:
+kubectl run kafka-consumer -ti --image=strimzi/kafka:latest-kafka-2.6.0 --rm=true --restart=Never -- bin/kafka-console-consumer.sh --bootstrap-server my-kafka-cluster-kafka-bootstrap:9092 --topic my-topic --from-beginning
+
+
 
 
 
