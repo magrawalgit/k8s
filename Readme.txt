@@ -50,8 +50,6 @@ helm install spark bitnami/spark -f https://raw.githubusercontent.com/mata1234/k
 ##
 export SERVICE_IP=$(kubectl get --namespace default svc spark-master-svc -o jsonpath="{.status.loadBalancer.ingress[0]['ip', 'hostname'] }")
   echo http://$SERVICE_IP:80
-  
-Run the commands below to obtain the master IP and submit your application.
 
   export EXAMPLE_JAR=$(kubectl exec -ti --namespace default spark-worker-0 -- find examples/jars/ -name 'spark-example*\.jar' | tr -d '\r')
   export SUBMIT_IP=$(kubectl get --namespace default svc spark-master-svc -o jsonpath="{.status.loadBalancer.ingress[0]['ip', 'hostname'] }")
@@ -63,7 +61,11 @@ Run the commands below to obtain the master IP and submit your application.
     --class org.apache.spark.examples.SparkPi \
     $EXAMPLE_JAR 1000
 ##
-    
+---------------------- 
+Run the commands below to obtain the master IP and submit your application.
+
+kubectl get svc -l "app.kubernetes.io/instance=spark,app.kubernetes.io/name=spark"
+
 kubectl run --namespace default spark-client --rm --tty -i --restart='Never' \
     --image docker.io/bitnami/spark:3.0.1-debian-10-r115 \
     -- spark-submit --master spark://LOAD-BALANCER-ADDRESS:7077 \
@@ -88,6 +90,25 @@ cd /opt/bitnami/spark/work
 cat SUBMISSION-ID/stdout
 
 exit
+----------------------
+OR connect to the master pod and open up pyspark shell
+
+kubectl get pods
+kubectl exec spark-master-0 -it -- pyspark
+run below code on pyspark
+>>
+words = 'there are infinite ways to master spark'
+sc = SparkContext()
+seq = words.split()
+data = sc.parallelize(seq)
+counts = data.map(lambda word: (word, 1)).reduceByKey(lambda a, b: a + b).collect()
+dict(counts)
+sc.stop()
+>>
+exit()
+----------------------
+
+
 --------------Kafka strimzi installation
 kubectl create -f https://operatorhub.io/install/stable/strimzi-kafka-operator.yaml
 
@@ -153,6 +174,27 @@ kubectl run kafka-consumer -ti --image=strimzi/kafka:latest-kafka-2.6.0 --rm=tru
 
 run CTRL+C to kill producer and consumer pod
 
+-------------------------------
+-- RUN spark-pi example
 
+kubectl create -f ./spark-pi.yaml
 
+kubectl get sparkapplications
+kubectl describe sparkapplications spark-pi
+kubectl get pods
+kubectl logs -f spark-pi-driver
+kubectl logs --tail=n spark-pi-driver
+kubectl describe pod spark-pi-driver
+kubectl logs --tail=20 spark-pi-driver | grep 'Pi is'
+
+cat <<'EOF'>> log4j.properties
+log4j.rootCategory=DEBUG, console
+log4j.appender.console=org.apache.log4j.ConsoleAppender
+log4j.appender.console.target=System.err
+log4j.appender.console.layout=org.apache.log4j.PatternLayout
+log4j.appender.console.layout.ConversionPattern=%d{yy/MM/dd HH:mm:ss} %p %c{1}: %m%n    
+EOF
+
+kubectl create configmap spark-conf-map --from-file log4j.properties
+kubectl create configmap spark-conf-map --from-file log4j.properties
 
