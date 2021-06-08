@@ -177,6 +177,10 @@ run CTRL+C to kill producer and consumer pod
 -------------------------------
 -- RUN spark-pi example
 
+kubectl get serviceAccounts
+kubectl get po
+helm list --all-namespaces
+
 kubectl apply -f https://raw.githubusercontent.com/mata1234/k8s/master/spark-pi.yaml
 
 kubectl get sparkapplications
