@@ -181,6 +181,14 @@ kubectl get serviceAccounts
 kubectl get po
 helm list --all-namespaces
 
+helm repo add incubator https://charts.helm.sh/incubator
+helm repo update
+
+kubectl create namespace spark-operator
+helm install spark-operator incubator/sparkoperator --namespace spark-operator --set enableWebhook=true --set enableBatchScheduler=true
+helm status spark-operator --namespace spark-operator
+
+
 kubectl apply -f https://raw.githubusercontent.com/mata1234/k8s/master/spark-pi.yaml
 
 kubectl get sparkapplications
