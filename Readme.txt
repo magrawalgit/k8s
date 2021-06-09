@@ -107,6 +107,8 @@ sc.stop()
 >>
 exit()
 ----------------------
+./bin/spark-submit   --class org.apache.spark.examples.SparkPi   --master spark://<master-IP>:<master-cluster-port>   --deploy-mode cluster  ./examples/jars/spark-examples_2.11-2.4.3.jar   1000
+----------------------
 
 
 --------------Kafka strimzi installation
@@ -175,7 +177,7 @@ kubectl run kafka-consumer -ti --image=strimzi/kafka:latest-kafka-2.6.0 --rm=tru
 run CTRL+C to kill producer and consumer pod
 
 -------------------------------
--- RUN spark-pi example
+-- RUN spark-pi example using spark-operator
 
 kubectl get serviceAccounts
 kubectl get po
@@ -184,16 +186,35 @@ helm list --all-namespaces
 helm repo add incubator https://charts.helm.sh/incubator
 helm repo update
 
+kubectl apply -f spark-rbac.yaml
+
 kubectl create namespace spark-operator
 helm install spark-operator incubator/sparkoperator --namespace spark-operator --set enableWebhook=true --set enableBatchScheduler=true
 helm status spark-operator --namespace spark-operator
 
+helm repo add spark-operator https://googlecloudplatform.github.io/spark-on-k8s-operator
+helm install so spark-operator/spark-operator --namespace spark-operator --create-namespace --set serviceAccounts.spark.name=spark
+helm uninstall so --namespace spark-operator
+kubectl get pods -n spark-operator
+kubectl get deployment -n spark-operator
+kubectl get clusterrolebinding |grep spark-operator
+kubectl describe clusterrolebinding so-spark-operator
+kubectl get role -n spark-operator
+helm status --namespace spark-operator so
 
 kubectl apply -f https://raw.githubusercontent.com/mata1234/k8s/master/spark-pi.yaml
+kubectl apply -f spark-pi.yaml
 
-kubectl get sparkapplications
-kubectl describe sparkapplications spark-pi
 kubectl get pods
+kubectl get sparkapplications
+kubectl get sparkapplications spark-pi -o=yaml
+kubectl get sparkapplications spark-pi -o=yaml | grep service
+kubectl describe sparkapplication spark-pi
+kubectl delete sparkapplication spark-pi
+
+
+kubectl port-forward spark-pi-1547981232122-driver 4040:4040
+
 kubectl logs -f spark-pi-driver
 kubectl logs --tail=n spark-pi-driver
 kubectl describe pod spark-pi-driver

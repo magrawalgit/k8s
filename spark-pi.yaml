@@ -4,20 +4,23 @@ metadata:
   name: spark-pi
   namespace: default
 spec:
+  schedule: "@every 60m"
+  #suspend: true
+  concurrencyPolicy: Forbid
   type: Scala
   mode: cluster
   image: "gcr.io/spark-operator/spark:v3.1.1"
   imagePullPolicy: Always
   mainClass: org.apache.spark.examples.SparkPi
   mainApplicationFile: "local:///opt/spark/examples/jars/spark-examples_2.12-3.1.1.jar"
-  sparkConf:
-    "spark.ui.port": "4040"
+  #sparkConf:
+    #"spark.ui.port": "4040"
   sparkVersion: "3.1.1"
   restartPolicy:
     type: OnFailure
     onFailureRetries: 1
     onFailureRetryInterval: 10
-    onSubmissionFailureRetries: 5
+    onSubmissionFailureRetries: 1
     onSubmissionFailureRetryInterval: 20
   volumes:
     - name: "test-volume"
@@ -30,7 +33,7 @@ spec:
     memory: "512m"
     labels:
       version: 3.1.1
-    serviceAccount: default
+    serviceAccount: spark
     volumeMounts:
       - name: "test-volume"
         mountPath: "/tmp"
