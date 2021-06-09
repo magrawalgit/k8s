@@ -4,7 +4,7 @@ metadata:
   name: spark-pi
   namespace: default
 spec:
-  schedule: "@every 60m"
+  schedule: "@every 2m"
   #suspend: true
   concurrencyPolicy: Forbid
   type: Scala

@@ -187,6 +187,7 @@ helm repo add incubator https://charts.helm.sh/incubator
 helm repo update
 
 kubectl apply -f spark-rbac.yaml
+kubectl create clusterrolebinding spark-role --clusterrole=edit --serviceaccount=default:spark --namespace=default
 
 kubectl create namespace spark-operator
 helm install spark-operator incubator/sparkoperator --namespace spark-operator --set enableWebhook=true --set enableBatchScheduler=true
