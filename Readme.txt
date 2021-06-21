@@ -97,7 +97,7 @@ kubectl get pods
 kubectl exec spark-master-0 -it -- pyspark
 run below code on pyspark
 >>
-words = 'there are infinite ways to master spark'
+words = 'there are infinite ways to learn kubernetes and helm charts'
 sc = SparkContext()
 seq = words.split()
 data = sc.parallelize(seq)
@@ -117,6 +117,7 @@ kubectl create -f https://operatorhub.io/install/stable/strimzi-kafka-operator.y
 OR
 
 helm repo add strimzi https://strimzi.io/charts/
+helm repo list
 helm repo update
 helm search repo strimzi
 helm install strimzi-kafka-0.23 strimzi/strimzi-kafka-operator
@@ -179,6 +180,8 @@ run CTRL+C to kill producer and consumer pod
 -------------------------------
 -- RUN spark-pi example using spark-operator
 
+http://www.openkb.info/2021/04/how-to-use-spark-operator-to-run-spark.html
+
 kubectl get serviceAccounts
 kubectl get po
 helm list --all-namespaces
@@ -189,12 +192,9 @@ helm repo update
 kubectl apply -f spark-rbac.yaml
 kubectl create clusterrolebinding spark-role --clusterrole=edit --serviceaccount=default:spark --namespace=default
 
-kubectl create namespace spark-operator
-helm install spark-operator incubator/sparkoperator --namespace spark-operator --set enableWebhook=true --set enableBatchScheduler=true
-helm status spark-operator --namespace spark-operator
 
 helm repo add spark-operator https://googlecloudplatform.github.io/spark-on-k8s-operator
-helm install so spark-operator/spark-operator --namespace spark-operator --create-namespace --set serviceAccounts.spark.name=spark
+helm install so spark-operator/spark-operator --namespace spark-operator --create-namespace --set serviceAccounts.spark.name=spark --set sparkJobNamespace=default
 helm uninstall so --namespace spark-operator
 kubectl get pods -n spark-operator
 kubectl get deployment -n spark-operator
@@ -232,3 +232,6 @@ EOF
 kubectl create configmap spark-conf-map --from-file log4j.properties
 kubectl create configmap spark-conf-map --from-file log4j.properties
 
+
+
+------------------------------
